@@ -1,0 +1,16 @@
+# Virtual environment
+env_quark-ai/
+
+# Environment variables (NEVER commit API key)
+.env
+
+# Python cache
+__pycache__/
+*.pyc 
+*.pyo 
+
+# VSCODE
+.vscode/ 
+
+# Mac
+.DC_Store
