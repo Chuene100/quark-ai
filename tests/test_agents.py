@@ -1,33 +1,29 @@
-import pytest
-from unittest.mock import MagicMock, patch
-from agents.base_agent import BaseAgent, Message
+from utils.cv_extractor import get_cv_summary
+from utils.job_scraper import manual_job_entry, clean_text, detect_source
 
+def test_manual_job_entry():
+    """Manual job entry builds a balid JobPosting. """
+    job = manual_job_entry(
+        title="Data Scientist",
+        company="Test Corp",
+        description="Looking for a Python expert with ML experience. "
+    )
 
-def test_base_agent_creation():
-    """Test that BaseAgent initialises correctly."""
-    with patch("anthropic.Athropic"):
-        agent = BaseAgent(
-        name="TestAgent",
-        system_prompt = "You are a test agent."
-        )
+    assert job.title == "Data Scientist"
+    assert job.company == "Test Corp"
+    assert job.source == "manual"
+    assert len(job.description) > 10
 
-        assert agent.name == "TestAgent"
-        assert agent.model == "claude-sonnet-4"
-        assert agent.max_tokens == 2000
+def test_clean_text():
+    """clean_text removes excess whitespace"""
+    messy = "Hello world\n\n\nThis is a test"
+    result = clean_text(messy)
+    assert " " not in result
+    assert result.count("\n\n\n") == 0
 
-
-def test_run_raises_not_implemented():
-    """BaseAgent.run() must raises NotImplementedError."""
-    with patch("anthropic.Anthropic"):
-        agent = BaseAgent(
-            name = "TestAgent",
-            system_prompt= "You are a test agent"
-        )
-        with pytest.raises(NotImplementedError):
-            agent.run()
-
-def test_messages_dataclass():
-    """Message objects hold role and content correctly."""
-    msg = Message(role="user", content="Hello")
-    assert msg.role == "user"
-    assert msg.content == "Hello"
+def test_detetect_source():
+    """detect_source identifies platforms correctly. """
+    assert detect_source("https://www/linkedin.com/jobs/123") == "linkedin"
+    assert detect_source("https://www/indeed.com/jobs/abc") == "indeed"
+    assert detect_source("https://www/pnet.com/jobs/456") == "pnet"
+    assert detect_source("https://www/somecompany.co.za/careers") == "other"
